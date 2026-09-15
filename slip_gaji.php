@@ -10,6 +10,7 @@ $nik        = $karyawan['nik'] ?? '320501230045';
 $email      = $karyawan['email'] ?? 'karyawan@perusahaan.co.id';
 $jabatan    = $karyawan['jabatan'] ?? 'Junior Web Programmer';
 $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
+$periode    = $karyawan['periode'] ?? '25 November 2026 - 25 Desember 2026';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -22,68 +23,15 @@ $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #0f172a;
-        }
-        .navbar-custom {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .slip-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .header-bg {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .section-title {
-            background: #f1f5f9;
-            color: #334155;
-            padding: 8px 14px;
-            font-weight: 600;
-            font-size: 13px;
-            border-radius: 8px;
-            letter-spacing: 0.5px;
-        }
-        .form-control {
-            border: 1.5px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .captcha-box {
-            font-weight: 700;
-            background: #ffffff;
-            color: #1e293b;
-            font-size: 20px;
-            padding: 8px 20px;
-            border-radius: 8px;
-            border: 1.5px solid #cbd5e1;
-            user-select: none;
-            display: inline-block;
-        }
-        .btn-submit-main {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 24px;
-            transition: all 0.2s;
-        }
-        .btn-submit-main:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            color: white;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .navbar-custom { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        .slip-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto; }
+        .header-bg { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border-radius: 12px; padding: 20px; }
+        .section-title { background: #f1f5f9; color: #334155; padding: 8px 14px; font-weight: 600; font-size: 13px; border-radius: 8px; letter-spacing: 0.5px; }
+        .form-control { border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+        .captcha-box { font-weight: 700; background: #ffffff; color: #1e293b; font-size: 20px; padding: 8px 20px; border-radius: 8px; border: 1.5px solid #cbd5e1; user-select: none; display: inline-block; }
+        .btn-submit-main { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-weight: 600; border: none; border-radius: 10px; padding: 10px 24px; transition: all 0.2s; }
+        .btn-submit-main:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); color: white; }
     </style>
 </head>
 <body>
@@ -100,11 +48,10 @@ $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
         
         <div class="header-bg text-center mb-4">
             <h4 class="fw-bold mb-1">SLIP GAJI KARYAWAN</h4>
-            <small class="opacity-75">PERIODE: 25 November 2026 - 25 Desember 2026</small>
+            <small class="opacity-75 fw-medium">PERIODE: <?php echo htmlspecialchars($periode); ?></small>
         </div>
 
         <form id="gajiForm" action="dashboard.php" method="POST" onsubmit="return handleFormSubmit(event)">
-            <!-- Flag submit untuk PHP -->
             <input type="hidden" name="update_gaji" value="1">
             <input type="hidden" name="id_karyawan" value="<?php echo $id; ?>">
             <input type="hidden" id="emailKaryawan" value="<?php echo htmlspecialchars($email); ?>">
@@ -175,9 +122,7 @@ $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
             <!-- Tombol Submit Utama -->
             <div class="d-flex gap-2 justify-content-end" id="actionButtons">
                 <a href="dashboard.php" class="btn btn-outline-secondary rounded-3">Batal</a>
-                <button type="submit" class="btn btn-submit-main">
-                    💾 Submit & Simpan ke Database
-                </button>
+                <button type="submit" class="btn btn-submit-main">💾 Submit & Simpan ke Database</button>
             </div>
         </form>
 
@@ -206,9 +151,7 @@ $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
 </div>
 
 <script>
-    let angka1 = 0;
-    let angka2 = 0;
-    let hasilPerkalian = 0;
+    let angka1 = 0, angka2 = 0, hasilPerkalian = 0;
 
     function generateCaptchaPerkalian() {
         angka1 = Math.floor(Math.random() * 9) + 2;
@@ -257,16 +200,15 @@ $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
         const email = document.getElementById('emailKaryawan').value;
         const gajiBersih = document.getElementById('gajiBersih').value;
 
-        // Link WhatsApp Web
+        // Siapkan Link WA & Email
         const pesanWA = `Halo ${nama} (NIK: ${nik}), Slip Gaji Anda periode ini telah diterbitkan dengan Gaji Bersih sebesar ${gajiBersih}.`;
         document.getElementById('btnWA').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(pesanWA)}`;
 
-        // Link Direct Gmail Web (Pasti Terbuka di Tab Baru)
         const subjectEmail = `Slip Gaji Karyawan - ${nama}`;
         const bodyEmail = `Yth. ${nama},\n\nBerikut adalah rincian slip gaji Anda:\nNIK: ${nik}\nGaji Bersih: ${gajiBersih}\n\nTerima kasih.`;
         document.getElementById('btnEmail').href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subjectEmail)}&body=${encodeURIComponent(bodyEmail)}`;
 
-        // Tampilkan Modal Opsi Share
+        // Tampilkan Modal Share
         const modalShare = new bootstrap.Modal(document.getElementById('modalShareOptions'));
         modalShare.show();
         
@@ -279,8 +221,9 @@ $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
         const buttons = document.getElementById('actionButtons');
         const captchaSec = document.getElementById('captchaSection');
         
-        buttons.style.display = 'none';
-        captchaSec.style.display = 'none';
+        // SEMBUNYIKAN TOTAL ELEMEN TOMBOL & CAPTCHA SEBELUM RENDER PDF
+        buttons.classList.add('d-none');
+        captchaSec.classList.add('d-none');
 
         const opt = {
           margin:       [0.3, 0.3, 0.3, 0.3],
@@ -290,9 +233,13 @@ $gajiPokok = $karyawan['gaji_pokok'] ?? 4500000;
           jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
+        // RENDER DAN UNDUH PDF
         html2pdf().set(opt).from(element).save().then(() => {
-            buttons.style.display = 'flex';
-            captchaSec.style.display = 'block';
+            // BERIKAN DELAY SEDIKIT SUPAYA FILE PDF DIJAMIN BERSIH DARI TOMBOL
+            setTimeout(() => {
+                buttons.classList.remove('d-none');
+                captchaSec.classList.remove('d-none');
+            }, 500);
         });
     }
 
