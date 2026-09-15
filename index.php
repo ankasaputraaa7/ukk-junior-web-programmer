@@ -1,3 +1,23 @@
+<?php
+session_start();
+
+$error_message = "";
+
+// Proses Verifikasi Login saat Form Disubmit
+if (isset($_POST['login'])) {
+    $email    = trim($_POST['email']);
+    $password = trim($_POST['password']);
+
+    // Validasi Email & Password Khusus
+    if ($email === 'anka@gmail.com' && $password === '123456') {
+        $_SESSION['login_user'] = $email;
+        header("Location: dashboard.php");
+        exit();
+    } else {
+        $error_message = "Email atau password salah!";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -9,47 +29,58 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background-color: #f8fafc;
+            color: #0f172a;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
         }
         .login-card {
             background: #ffffff;
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            border: 1px solid #e2e8f0;
             border-radius: 16px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
             width: 100%;
-            max-width: 420px;
-            padding: 40px;
+            max-width: 400px;
+            padding: 32px;
+        }
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 16px auto;
         }
         .form-control {
-            border: 1.5px solid #e2e8f0;
             border-radius: 10px;
-            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            padding: 10px 14px;
             font-size: 14px;
-            transition: all 0.2s;
         }
         .form-control:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
-        .btn-custom-primary {
+        .btn-login {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: white;
+            font-weight: 600;
             border: none;
             border-radius: 10px;
             padding: 12px;
-            font-weight: 600;
-            font-size: 15px;
+            width: 100%;
+            font-size: 14px;
             transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
-        .btn-custom-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
             color: white;
         }
     </style>
@@ -58,26 +89,33 @@
 
 <div class="login-card">
     <div class="text-center mb-4">
-        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 56px; height: 56px; font-size: 24px;">💼</div>
+        <div class="logo-icon">💼</div>
         <h4 class="fw-bold text-dark mb-1">Selamat Datang</h4>
-        <p class="text-muted small">Silakan masuk ke Portal Manajemen Karyawan</p>
+        <p class="text-muted small mb-0">Silakan masuk ke Portal Manajemen Karyawan</p>
     </div>
-    
-    <form action="dashboard.php" method="GET">
+
+    <!-- Notifikasi Error jika Email/Password Salah -->
+    <?php if (!empty($error_message)): ?>
+        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3 text-center fw-medium" role="alert">
+            ⚠️ <?php echo htmlspecialchars($error_message); ?>
+        </div>
+    <?php endif; ?>
+
+    <form action="index.php" method="POST">
         <div class="mb-3">
             <label class="form-label small fw-semibold text-secondary">Email / Username</label>
-            <input type="text" class="form-control" placeholder="nama@perusahaan.co.id" required>
-        </div>
-        
-        <div class="mb-4">
-            <div class="d-flex justify-content-between">
-                <label class="form-label small fw-semibold text-secondary">Kata Sandi</label>
-                <a href="#" class="small text-decoration-none fw-semibold" style="color: #2563eb;">Lupa sandi?</a>
-            </div>
-            <input type="password" class="form-control" placeholder="••••••••" required>
+            <input type="email" name="email" class="form-control" placeholder="masukkan email atau username" required autofocus>
         </div>
 
-        <button type="submit" class="btn btn-custom-primary w-100">Masuk ke Dashboard</button>
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-semibold text-secondary mb-0">Kata Sandi</label>
+                <a href="#" class="small text-primary text-decoration-none">Lupa sandi?</a>
+            </div>
+            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" name="login" class="btn btn-login">Masuk</button>
     </form>
 </div>
 

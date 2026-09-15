@@ -20,24 +20,6 @@ if (isset($_POST['tambah_karyawan'])) {
     }
 }
 
-// Proses Update Periode Gaji (Spesifik Karyawan / Semua Karyawan)
-if (isset($_POST['update_periode_karyawan'])) {
-    $target_karyawan = mysqli_real_escape_string($koneksi, $_POST['target_karyawan']);
-    $periode_baru    = mysqli_real_escape_string($koneksi, $_POST['periode_baru']);
-
-    if ($target_karyawan === 'all') {
-        $query_periode = "UPDATE karyawan SET periode = '$periode_baru'";
-    } else {
-        $query_periode = "UPDATE karyawan SET periode = '$periode_baru' WHERE id = '$target_karyawan'";
-    }
-
-    if (mysqli_query($koneksi, $query_periode)) {
-        echo "<script>alert('Periode Gaji Berhasil Diperbarui!'); window.location='dashboard.php';</script>";
-    } else {
-        echo "<script>alert('Gagal memperbarui periode: " . mysqli_error($koneksi) . "');</script>";
-    }
-}
-
 // Proses Hapus Data Karyawan
 if (isset($_GET['hapus'])) {
     $id_hapus = $_GET['hapus'];
@@ -58,10 +40,7 @@ if (isset($_POST['update_gaji'])) {
     }
 }
 
-// Ambil daftar unik semua periode yang ada untuk filter dropdown
-$query_list_periode = mysqli_query($koneksi, "SELECT DISTINCT periode FROM karyawan WHERE periode IS NOT NULL AND periode != '' ORDER BY periode DESC");
-
-// Filter Data Karyawan Berdasarkan Periode yang Dipilih
+// Filter Periode Gaji
 $filter_periode = $_GET['filter_periode'] ?? '';
 if (!empty($filter_periode)) {
     $filter_escaped = mysqli_real_escape_string($koneksi, $filter_periode);
@@ -71,8 +50,8 @@ if (!empty($filter_periode)) {
 }
 $result = mysqli_query($koneksi, $query_karyawan);
 
-// Ambil daftar karyawan untuk dropdown modal periode
-$list_karyawan = mysqli_query($koneksi, "SELECT id, nama, nik FROM karyawan ORDER BY nama ASC");
+// Ambil daftar periode unik untuk filter
+$query_list_periode = mysqli_query($koneksi, "SELECT DISTINCT periode FROM karyawan WHERE periode IS NOT NULL AND periode != '' ORDER BY id DESC");
 ?>
 
 <!DOCTYPE html>
@@ -96,10 +75,7 @@ $list_karyawan = mysqli_query($koneksi, "SELECT id, nama, nik FROM karyawan ORDE
         .btn-delete:hover { background: #dc2626; color: #ffffff; border-color: #dc2626; }
         .btn-tambah { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 14px; transition: all 0.2s; white-space: nowrap; }
         .btn-tambah:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); color: white; }
-        .btn-periode { background: #ffffff; border: 1.5px solid #2563eb; color: #2563eb; border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 14px; transition: all 0.2s; white-space: nowrap; }
-        .btn-periode:hover { background: #eff6ff; color: #1d4ed8; }
-        .filter-select { border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 14px; padding: 8px 12px; max-width: 250px; }
-        .filter-select:focus { border-color: #2563eb; box-shadow: none; }
+        .filter-select { border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 14px; padding: 8px 12px; max-width: 260px; }
         .form-control, .form-select { border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 14px; }
     </style>
 </head>
@@ -124,8 +100,8 @@ $list_karyawan = mysqli_query($koneksi, "SELECT id, nama, nik FROM karyawan ORDE
                 <p class="text-muted small mb-0">Kelola data karyawan dan buat slip gaji otomatis.</p>
             </div>
             
-            <!-- Filter Khusus Periode Gaji + Tombol Aksi -->
             <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Filter Periode Gaji -->
                 <form action="dashboard.php" method="GET" class="d-flex gap-2 align-items-center">
                     <select name="filter_periode" class="form-select filter-select" onchange="this.form.submit()">
                         <option value="">-- Semua Periode --</option>
@@ -140,8 +116,8 @@ $list_karyawan = mysqli_query($koneksi, "SELECT id, nama, nik FROM karyawan ORDE
                     <?php endif; ?>
                 </form>
 
-                <button class="btn btn-periode" data-bs-toggle="modal" data-bs-target="#modalPeriode">+ Tambah Periode</button>
-                <button class="btn btn-tambah" data-bs-toggle="modal" data-bs-target="#modalTambah">+ Tambah Karyawan</button>
+                <!-- Tombol ini memicu Pop-up STEP 1: PILIH PERIODE -->
+                <button class="btn btn-tambah" data-bs-toggle="modal" data-bs-target="#modalPilihPeriode">+ Tambah Karyawan</button>
             </div>
         </div>
 
@@ -186,7 +162,7 @@ $list_karyawan = mysqli_query($koneksi, "SELECT id, nama, nik FROM karyawan ORDE
                         </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr><td colspan="6" class="text-center py-5 text-muted">Data karyawan untuk periode ini tidak ditemukan.</td></tr>
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Data karyawan tidak ditemukan.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -195,7 +171,54 @@ $list_karyawan = mysqli_query($koneksi, "SELECT id, nama, nik FROM karyawan ORDE
     </div>
 </div>
 
-<!-- Modal Form Tambah Karyawan -->
+<!-- STEP 1: MODAL POP-UP PILIH PERIODE (PAK ARIEF STYLE) -->
+<div class="modal fade" id="modalPilihPeriode" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">📅 Pilih Periode Gaji</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="text-muted small mb-3">Tentukan bulan dan tahun penghentian gaji (Tanggal otomatis mengacu ke standar mockup: <strong>Tanggal 25</strong> setiap bulan).</p>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label small fw-semibold">Bulan Penggajian</label>
+                        <select id="selectBulan" class="form-select">
+                            <option value="November - Desember">November - Desember (25 Nov - 25 Des)</option>
+                            <option value="Desember - Januari">Desember - Januari (25 Des - 25 Jan)</option>
+                            <option value="Januari - Februari">Januari - Februari (25 Jan - 25 Feb)</option>
+                            <option value="Februari - Maret">Februari - Maret (25 Feb - 25 Mar)</option>
+                            <option value="Maret - April">Maret - April (25 Mar - 25 Apr)</option>
+                            <option value="April - Mei">April - Mei (25 Apr - 25 Mei)</option>
+                            <option value="Mei - Juni">Mei - Juni (25 Mei - 25 Jun)</option>
+                            <option value="Juni - Juli">Juni - Juli (25 Jun - 25 Jul)</option>
+                            <option value="Juli - Agustus">Juli - Agustus (25 Jul - 25 Ags)</option>
+                            <option value="Agustus - September">Agustus - September (25 Ags - 25 Sep)</option>
+                            <option value="September - Oktober">September - Oktober (25 Sep - 25 Okt)</option>
+                            <option value="Oktober - November">Oktober - November (25 Okt - 25 Nov)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">Tahun</label>
+                        <select id="selectTahun" class="form-select">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-tambah" onclick="lanjutKeFormTambah()">Lanjut Isikan Data Karyawan →</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STEP 2: MODAL FORM TAMBAH KARYAWAN -->
 <div class="modal fade" id="modalTambah" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
@@ -229,56 +252,54 @@ $list_karyawan = mysqli_query($koneksi, "SELECT id, nama, nik FROM karyawan ORDE
                             <input type="number" name="gaji_pokok" class="form-control" placeholder="4500000" required>
                         </div>
                     </div>
+                    
+                    <!-- Periode otomatis terisi dari Pop-up Step 1 -->
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Periode Gaji</label>
-                        <input type="text" name="periode" class="form-control" value="25 November 2026 - 25 Desember 2026" required>
+                        <label class="form-label small fw-semibold">Periode Gaji (Terpilih)</label>
+                        <input type="text" name="periode" id="inputPeriodeTerpilih" class="form-control bg-light fw-bold text-primary" readonly required>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" name="tambah_karyawan" class="btn btn-tambah">Simpan Data</button>
+                    <button type="submit" name="tambah_karyawan" class="btn btn-tambah">Simpan Data Karyawan</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Form Update Periode Gaji -->
-<div class="modal fade" id="modalPeriode" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold">Update Periode Gaji</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="dashboard.php" method="POST">
-                <div class="modal-body py-4">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Pilih Karyawan</label>
-                        <select name="target_karyawan" class="form-select" required>
-                            <option value="all">-- Semua Karyawan --</option>
-                            <?php 
-                            mysqli_data_seek($list_karyawan, 0);
-                            while ($k = mysqli_fetch_assoc($list_karyawan)): 
-                            ?>
-                                <option value="<?php echo $k['id']; ?>"><?php echo htmlspecialchars($k['nama']) . " (" . htmlspecialchars($k['nik']) . ")"; ?></option>
-                            <?php endwhile; ?>
-                        </select>
-                        <small class="text-muted mt-1 d-block">Pilih karyawan tertentu atau "Semua Karyawan" untuk update massal.</small>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Periode Gaji Baru</label>
-                        <input type="text" name="periode_baru" class="form-control" placeholder="Contoh: 25 November 2026 - 25 Desember 2026" value="25 November 2026 - 25 Desember 2026" required>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" name="update_periode_karyawan" class="btn btn-tambah">Terapkan Periode</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<script>
+    function lanjutKeFormTambah() {
+        const bulanOpt = document.getElementById('selectBulan').value;
+        const tahun = document.getElementById('selectTahun').value;
+
+        // Pisahkan nama bulan untuk membentuk string tanggal format 25 Nov - 25 Des YYYY
+        let tglFormat = "";
+        if (bulanOpt === "November - Desember") tglFormat = `25 November ${tahun} - 25 Desember ${tahun}`;
+        else if (bulanOpt === "Desember - Januari") tglFormat = `25 Desember ${tahun} - 25 Januari ${parseInt(tahun)+1}`;
+        else if (bulanOpt === "Januari - Februari") tglFormat = `25 Januari ${tahun} - 25 Februari ${tahun}`;
+        else if (bulanOpt === "Februari - Maret") tglFormat = `25 Februari ${tahun} - 25 Maret ${tahun}`;
+        else if (bulanOpt === "Maret - April") tglFormat = `25 Maret ${tahun} - 25 April ${tahun}`;
+        else if (bulanOpt === "April - Mei") tglFormat = `25 April ${tahun} - 25 Mei ${tahun}`;
+        else if (bulanOpt === "Mei - Juni") tglFormat = `25 Mei ${tahun} - 25 Juni ${tahun}`;
+        else if (bulanOpt === "Juni - Juli") tglFormat = `25 Juni ${tahun} - 25 Juli ${tahun}`;
+        else if (bulanOpt === "Juli - Agustus") tglFormat = `25 Juli ${tahun} - 25 Agustus ${tahun}`;
+        else if (bulanOpt === "Agustus - September") tglFormat = `25 Agustus ${tahun} - 25 September ${tahun}`;
+        else if (bulanOpt === "September - Oktober") tglFormat = `25 September ${tahun} - 25 Oktober ${tahun}`;
+        else if (bulanOpt === "Oktober - November") tglFormat = `25 Oktober ${tahun} - 25 November ${tahun}`;
+
+        // Setel nilai ke input hidden/readonly di modal Step 2
+        document.getElementById('inputPeriodeTerpilih').value = tglFormat;
+
+        // Tutup Modal Step 1 dan Buka Modal Step 2
+        const modal1El = document.getElementById('modalPilihPeriode');
+        const modal1 = bootstrap.Modal.getInstance(modal1El);
+        modal1.hide();
+
+        const modal2 = new bootstrap.Modal(document.getElementById('modalTambah'));
+        modal2.show();
+    }
+</script>
 
 </body>
 </html>
