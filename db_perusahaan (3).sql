@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 15, 2026 at 04:03 PM
+-- Generation Time: Sep 16, 2026 at 06:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -69,6 +69,29 @@ INSERT INTO `periode` (`id`, `nama_periode`, `tgl_awal`, `tgl_akhir`, `status`) 
 (1, '12 Oktober 2026 - 12 November 2026', '2026-10-12', '2026-11-12', 'Aktif'),
 (2, '30 November 2026 - 30 Desember 2026', '2026-11-30', '2026-12-30', 'Aktif');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `nama` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `nama`, `email`, `password`, `created_at`) VALUES
+(1, 'Anka Saputra', 'anka@gmail.com', '123456', '2026-09-16 03:53:33'),
+(2, 'Anka', 'andri@gmail.com', '123', '2026-09-16 03:57:51'),
+(3, 'Anka Saputtra', 'ankaandri4@gmail.com', 'Ankha12345', '2026-09-16 03:59:20');
+
 --
 -- Indexes for dumped tables
 --
@@ -87,6 +110,13 @@ ALTER TABLE `periode`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -101,6 +131,12 @@ ALTER TABLE `karyawan`
 --
 ALTER TABLE `periode`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
