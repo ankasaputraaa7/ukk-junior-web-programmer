@@ -3,13 +3,16 @@ session_start();
 
 $error_message = "";
 
-// Proses Verifikasi Login saat Form Disubmit
+// Ambil password admin aktif (default: 123456 atau hasil reset)
+$valid_password = $_SESSION['admin_password'] ?? '123456';
+
+// Proses Verifikasi Login
 if (isset($_POST['login'])) {
     $email    = trim($_POST['email']);
     $password = trim($_POST['password']);
 
-    // Validasi Email & Password Khusus
-    if ($email === 'anka@gmail.com' && $password === '123456') {
+    // Validasi Login
+    if ($email === 'anka@gmail.com' && $password === $valid_password) {
         $_SESSION['login_user'] = $email;
         header("Location: dashboard.php");
         exit();
@@ -40,7 +43,7 @@ if (isset($_POST['login'])) {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
             width: 100%;
             max-width: 400px;
             padding: 32px;
@@ -63,10 +66,6 @@ if (isset($_POST['login'])) {
             padding: 10px 14px;
             font-size: 14px;
         }
-        .form-control:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
         .btn-login {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: white;
@@ -76,12 +75,6 @@ if (isset($_POST['login'])) {
             padding: 12px;
             width: 100%;
             font-size: 14px;
-            transition: all 0.2s;
-        }
-        .btn-login:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            color: white;
         }
     </style>
 </head>
@@ -94,9 +87,8 @@ if (isset($_POST['login'])) {
         <p class="text-muted small mb-0">Silakan masuk ke Portal Manajemen Karyawan</p>
     </div>
 
-    <!-- Notifikasi Error jika Email/Password Salah -->
     <?php if (!empty($error_message)): ?>
-        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3 text-center fw-medium" role="alert">
+        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3 text-center fw-medium">
             ⚠️ <?php echo htmlspecialchars($error_message); ?>
         </div>
     <?php endif; ?>
@@ -104,18 +96,19 @@ if (isset($_POST['login'])) {
     <form action="index.php" method="POST">
         <div class="mb-3">
             <label class="form-label small fw-semibold text-secondary">Email / Username</label>
-            <input type="email" name="email" class="form-control" placeholder="masukkan email atau username" required autofocus>
+            <input type="email" name="email" class="form-control" placeholder="Masukkan email atau username" required autofocus>
         </div>
 
         <div class="mb-4">
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <label class="form-label small fw-semibold text-secondary mb-0">Kata Sandi</label>
-                <a href="#" class="small text-primary text-decoration-none">Lupa sandi?</a>
+                <!-- Link dihubungkan ke lupa_sandi.php -->
+                <a href="lupa_sandi.php" class="small text-primary text-decoration-none fw-semibold">Lupa sandi?</a>
             </div>
-            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            <input type="password" name="password" class="form-control" placeholder="Masukkan kata sandi" required>
         </div>
 
-        <button type="submit" name="login" class="btn btn-login">Masuk</button>
+        <button type="submit" name="login" class="btn btn-login">Masuk ke Dashboard</button>
     </form>
 </div>
 
